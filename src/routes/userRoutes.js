@@ -4,7 +4,6 @@ const {
   sendSignUpLink,
   completeSignUp,
 } = require("../Controllers/SendUserLink");
-const { signup } = require("../Controllers/userController");
 
 const router = express.Router();
 

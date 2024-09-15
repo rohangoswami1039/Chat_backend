@@ -19,19 +19,25 @@ const sendSignUpLink = async (req, res) => {
   try {
     // Generate email sign-in link
     const link = `${process.env.BACKEND_HOSTED_URL}/api/users/completeSignUp?token=${token}`;
-
-    // TODO: Send the link via email (you can use nodemailer or another email service)
     const emailContent = `
-      <h1>Sign Up</h1>
-      <p>Click the link below to complete your sign up:</p>
-      <a href="${link}">Complete Sign Up</a>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; border-radius: 10px;">
+        <div style="text-align: center; padding-bottom: 20px;">
+          <h1 style="color: #333;">Welcome to Radius, ${name}</h1>
+          <p style="color: #555;">We're excited to have you on board. Click the button below to complete your sign-up process.</p>
+        </div>
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="${link}" style="background-color: #28a745; color: white; text-decoration: none; padding: 15px 30px; font-size: 16px; border-radius: 5px;">Confirm Email</a>
+        </div>
+        <div style="text-align: center; color: #555; padding-top: 10px;">
+          <p>If you didn’t sign up for this account, you can safely ignore this email.</p>
+        </div>
+        <div style="text-align: center; color: #999; font-size: 12px; padding-top: 20px;">
+          <p>© 2024 Your Company. All rights reserved.</p>
+        </div>
+      </div>
     `;
-
-    // Send the email
     const info = await sendEmail(email, "Complete Your Sign Up", emailContent);
-
-    // For demo purposes, we'll just return the link in the response
-    return res.status(200).json({ message: "Signup email sent", link, info });
+    return res.status(200).json({ message: "Signup email sent", info });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to send signup email" });
@@ -50,16 +56,11 @@ const completeSignUp = async (req, res) => {
     if (!decoded || !decoded.email) {
       return res.status(400).json({ error: "Invalid or expired token" });
     }
-
-    console.log(decoded);
     const email = decoded.email;
     const name = decoded.name;
     const password = decoded.password;
-    console.log(email, name, password);
-
     try {
       const existingUser = await findUserByEmail(email);
-      console.log("Existing User >>> ", existingUser);
       if (existingUser) {
         console.log("User already exists needed to signin");
         return res.status(400).json({ error: "User already exists" });

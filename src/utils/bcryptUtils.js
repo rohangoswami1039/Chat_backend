@@ -28,9 +28,28 @@ const verifySignUpToken = (token) => {
   }
 };
 
+const generateLoginToken = (email, password) => {
+  const payload = { email, password };
+  const token = jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: "7d", // Token expires in 7 days
+  });
+  return token;
+};
+
+const verifyLoginToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+};
+
 module.exports = {
   hashPassword,
   comparePassword,
   generateSignUpToken,
   verifySignUpToken,
+  generateLoginToken,
+  verifyLoginToken,
 };
