@@ -9,6 +9,6 @@ const { signup } = require("../Controllers/userController");
 const router = express.Router();
 
 router.post("/signup", sendSignUpLink);
-router.get("/complete-signup", completeSignUp);
+router.get("/completeSignUp", completeSignUp);
 
 module.exports = router;
