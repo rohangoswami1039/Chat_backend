@@ -1,7 +1,6 @@
 require("dotenv").config(); // Load environment variables from .env file
 const express = require("express");
 const cors = require("cors");
-const { completeSignUp } = require("./src/Controllers/SendUserLink");
 const userRoutes = require("./src/routes/userRoutes");
 const app = express();
 
@@ -13,7 +12,7 @@ app.use(express.static("public"));
 //Routes of the Backend Server
 
 //app.use("/api/users", userRoutes);
-app.get("/complete-signup", completeSignUp);
+//app.get("/complete-signup", completeSignUp);
 
 app.use("/api/users", userRoutes);
 
