@@ -9,7 +9,7 @@ const sendSignUpLink = async (req, res) => {
   }
 
   const actionCodeSettings = {
-    url: `${process.env.BACKEND_HOSTED_URL}/completeSignUp`, // Change to your frontend URL
+    url: `${process.env.BACKEND_HOSTED_URL}/api/users/completeSignUp`, // Change to your frontend URL
     handleCodeInApp: true, // This must be true for email link sign-in
   };
 
@@ -40,7 +40,6 @@ const sendSignUpLink = async (req, res) => {
 
 const completeSignUp = async (req, res) => {
   const { email, oobCode } = req.query;
-
   if (!email || !oobCode) {
     return res.status(400).json({ error: "Email and code are required" });
   }
