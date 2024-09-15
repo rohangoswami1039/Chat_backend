@@ -9,7 +9,7 @@ const sendSignUpLink = async (req, res) => {
   }
 
   const actionCodeSettings = {
-    url: "http://localhost:4001/completeSignUp", // Change to your frontend URL
+    url: `${process.env.BACKEND_HOSTED_URL}/completeSignUp`, // Change to your frontend URL
     handleCodeInApp: true, // This must be true for email link sign-in
   };
 
