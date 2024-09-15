@@ -13,7 +13,8 @@ app.use(express.static("public"));
 //Routes of the Backend Server
 
 //app.use("/api/users", userRoutes);
-app.post("/complete-signup", completeSignUp);
+app.get("/complete-signup", completeSignUp);
+
 app.use("/api/users", userRoutes);
 
 app.get("/", (req, res) => {

@@ -39,7 +39,7 @@ const sendSignUpLink = async (req, res) => {
 };
 
 const completeSignUp = async (req, res) => {
-  const { email, oobCode } = req.body; // oobCode is part of the email link
+  const { email, oobCode } = req.query;
 
   if (!email || !oobCode) {
     return res.status(400).json({ error: "Email and code are required" });
