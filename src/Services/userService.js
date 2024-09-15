@@ -26,7 +26,7 @@ const findUserByUsername = async (username) => {
 
 const findUserByEmail = async (email) => {
   return await prisma.user.findUnique({
-    where: { email },
+    where: { email }, // This should reference the `email` column properly
   });
 };
 

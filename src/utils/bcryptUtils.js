@@ -33,7 +33,7 @@ const generateLoginToken = (email, password) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: "7d", // Token expires in 7 days
   });
-  return token;
+  return token.toString();
 };
 
 const verifyLoginToken = (token) => {

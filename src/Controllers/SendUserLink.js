@@ -37,7 +37,7 @@ const sendSignUpLink = async (req, res) => {
       </div>
     `;
     const info = await sendEmail(email, "Complete Your Sign Up", emailContent);
-    return res.status(200).json({ message: "Signup email sent", info });
+    return res.status(200).json({ message: "Signup email sent", info, link });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to send signup email" });
@@ -46,24 +46,36 @@ const sendSignUpLink = async (req, res) => {
 
 const completeSignUp = async (req, res) => {
   const { token } = req.query;
+
   if (!token) {
-    return res.status(400).json({ error: "Email and code are required" });
+    return res.status(400).json({ error: "Token is required" });
   }
 
   try {
-    // Verify the email link
     const decoded = verifySignUpToken(token);
     if (!decoded || !decoded.email) {
-      return res.status(400).json({ error: "Invalid or expired token" });
+      return res.status(400).json({ error: "Invalid token" });
     }
-    const email = decoded.email;
-    const name = decoded.name;
-    const password = decoded.password;
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (decoded.exp && decoded.exp < currentTime) {
+      return res.status(400).json({
+        error: "Token has expired. Please request a new sign-up link.",
+      });
+    }
+
+    const { email, name, password } = decoded;
     try {
       const existingUser = await findUserByEmail(email);
       if (existingUser) {
-        console.log("User already exists needed to signin");
-        return res.status(400).json({ error: "User already exists" });
+        console.log("User already exists, prompting sign-in", existingUser);
+        if (existingUser?.token) {
+          return res.status(400).json({
+            message: "User already exists",
+            token: existingUser?.token,
+          });
+        } else {
+          return res.status(400).json({ error: "Token does not exist" });
+        }
       } else {
         const newUser = await createUser(email, name, password);
         return res
@@ -72,13 +84,14 @@ const completeSignUp = async (req, res) => {
       }
     } catch (error) {
       console.error(error);
-      return res
-        .status(500)
-        .json({ error: "Something went wrong", Message: error });
+      return res.status(500).json({
+        error: "Error processing user sign-up",
+        message: error.message,
+      });
     }
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to verify email link" });
+    return res.status(500).json({ error: "Failed to verify token" });
   }
 };
 module.exports = { sendSignUpLink, completeSignUp };
