@@ -1,24 +1,24 @@
 const auth = require("../utils/Firebase/firebase_config");
 const { sendEmail } = require("../utils/emailService");
+const {
+  generateSignUpToken,
+  verifySignUpToken,
+} = require("../utils/bcryptUtils");
+
+const { findUserByEmail, createUser } = require("../Services/userService");
 
 const sendSignUpLink = async (req, res) => {
-  const { email } = req.body;
+  const { email, name, password } = req.body;
 
   if (!email) {
     return res.status(400).json({ error: "Email is required" });
   }
 
-  const actionCodeSettings = {
-    url: `${process.env.BACKEND_HOSTED_URL}/api/users/completeSignUp`, // Change to your frontend URL
-    handleCodeInApp: true, // This must be true for email link sign-in
-  };
+  const token = generateSignUpToken(email, name, password);
 
   try {
     // Generate email sign-in link
-    const link = await auth.generateSignInWithEmailLink(
-      email,
-      actionCodeSettings
-    );
+    const link = `${process.env.BACKEND_HOSTED_URL}/api/users/completeSignUp?token=${token}`;
 
     // TODO: Send the link via email (you can use nodemailer or another email service)
     const emailContent = `
@@ -39,24 +39,42 @@ const sendSignUpLink = async (req, res) => {
 };
 
 const completeSignUp = async (req, res) => {
-  const { email, oobCode } = req.query;
-  if (!email || !oobCode) {
+  const { token } = req.query;
+  if (!token) {
     return res.status(400).json({ error: "Email and code are required" });
   }
 
   try {
     // Verify the email link
-    const emailVerified = await auth.verifyPasswordResetCode(oobCode);
-
-    if (emailVerified !== email) {
-      return res.status(400).json({ error: "Invalid email or link" });
+    const decoded = verifySignUpToken(token);
+    if (!decoded || !decoded.email) {
+      return res.status(400).json({ error: "Invalid or expired token" });
     }
 
-    // You can now create the user in your system (e.g., in Prisma DB)
-    // For demonstration, return success response
-    return res
-      .status(200)
-      .json({ message: "Email verified and signup completed" });
+    console.log(decoded);
+    const email = decoded.email;
+    const name = decoded.name;
+    const password = decoded.password;
+    console.log(email, name, password);
+
+    try {
+      const existingUser = await findUserByEmail(email);
+      console.log("Existing User >>> ", existingUser);
+      if (existingUser) {
+        console.log("User already exists needed to signin");
+        return res.status(400).json({ error: "User already exists" });
+      } else {
+        const newUser = await createUser(email, name, password);
+        return res
+          .status(201)
+          .json({ message: "User created successfully", newUser });
+      }
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ error: "Something went wrong", Message: error });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to verify email link" });
